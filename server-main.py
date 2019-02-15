@@ -5,6 +5,14 @@ import socket
 from threading import Thread
 
 # references: Python GUI cookbook
+# https://docs.python.org/3/howto/sockets.html#creating-a-socket
+# https://pymotw.com/3/select/
+# https://docs.python.org/3/library/queue.html
+# http://net-informations.com/python/net/thread.htm
+# https://www.geeksforgeeks.org/socket-programming-multi-threading-python/
+# https://medium.com/swlh/lets-write-a-chat-app-in-python-f6783a9ac170
+
+
 server_window = tk.Tk()
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_host = "127.0.0.1"
@@ -42,6 +50,7 @@ def wait_for_new_clients():
 def setup_server_socket():
     try:
         server_socket.bind((server_host, server_port))
+        server_socket.setblocking(False)
         print("Server started")
     except OSError as e:
         print("An error occurred - please fix before relaunching " + str(e))
