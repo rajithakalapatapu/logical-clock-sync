@@ -33,11 +33,13 @@ def get_address_from_name(name):
             return address
 
 
-def parse_data_from_client(client_name, data_from_client):
+def parse_data_from_client(client_address, data_from_client):
     tokens = data_from_client.split(":")
     mode, destination, message = tokens[0], tokens[1], tokens[2]
     print("Message {} destined to {} via mode {}".format(message, destination, mode))
-    full_message = "{}:{}:{}".format(mode, connected_clients[client_name][3], message)
+    full_message = "{}:{}:{}".format(
+        mode, connected_clients[client_address][2], message
+    )
     print(connected_clients)
     if mode == "1-1":
         print(
@@ -49,22 +51,25 @@ def parse_data_from_client(client_name, data_from_client):
             bytes(full_message, "UTF-8")
         )
     elif mode == "1-N":
-        for name, client in connected_clients.items():
+        for address, client in connected_clients.items():
             client[0].sendall(bytes(full_message, "UTF-8"))
-    else:
-        pass
+    elif mode == "get":
+        names = []
+        for address, client in connected_clients.items():
+            names.append(client[2])
+        connected_clients[client_address][0].sendall(bytes(":".join(names), "UTF-8"))
 
 
 def read_from_client(client_connection, event_mask):
     print(
         "Client activity on {} with event mask {}".format(client_connection, event_mask)
     )
-    client_name = client_connection.getpeername()
+    client_address = client_connection.getpeername()
     data_from_client = client_connection.recv(MAX_MESSAGE_SIZE).decode("UTF-8")
     if data_from_client:
-        print("Received {} from {}".format(data_from_client, client_name))
-        scr.insert(END, "{}: \t {}\n".format(client_name, data_from_client))
-        parse_data_from_client(client_name, data_from_client)
+        print("Received {} from {}".format(data_from_client, client_address))
+        scr.insert(END, "{}: \t {}\n".format(client_address, data_from_client))
+        parse_data_from_client(client_address, data_from_client)
     else:
         print("Closing socket to {}".format(client_connection))
         unregister_client_name(client_connection)
