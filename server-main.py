@@ -7,10 +7,13 @@ import selectors
 # references: Python GUI cookbook
 # https://docs.python.org/3/howto/sockets.html#creating-a-socket
 # https://pymotw.com/3/select/
+# https://pymotw.com/3/selectors/
 # https://docs.python.org/3/library/queue.html
 # http://net-informations.com/python/net/thread.htm
 # https://www.geeksforgeeks.org/socket-programming-multi-threading-python/
 # https://medium.com/swlh/lets-write-a-chat-app-in-python-f6783a9ac170
+
+
 MAX_MESSAGE_SIZE = 2048
 
 server_window = tk.Tk()
@@ -132,6 +135,7 @@ def setup_server_socket():
         def_selector.register(server_socket, selectors.EVENT_READ, accept_new_client)
         print("Server started...")
         select_loop = Thread(target=run_select_thread)
+        select_loop.daemon = True
         select_loop.start()
 
     except OSError as e:

@@ -31,10 +31,11 @@ def connect_to_server():
         client_socket.sendall(bytes(name_entered, "UTF-8"))
         connection_status.config(text="Connected to server...")
         t = Thread(target=receive_from_server)
+        t.daemon = True
         t.start()
         global connected
         connected = True
-    except Exception as e:
+    except Exception:
         connected = False
 
 
@@ -93,6 +94,7 @@ def receive_from_server():
             else:
                 print("Closing this window as the server exited.")
                 exit_program()
+                break
     except OSError as e:
         print(e)
 
