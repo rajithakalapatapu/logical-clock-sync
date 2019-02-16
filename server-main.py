@@ -86,11 +86,11 @@ def unregister_client_name(client_connection):
     client_connection.close()
 
 
-def update_client_labels(connected_clients):
+def update_client_labels(clients):
     for i in range(len(client_labels)):
         client_labels[i]["text"] = ""
     index = 0
-    for name, client in connected_clients.items():
+    for name, client in clients.items():
         client_labels[index]["text"] = client[2].strip()
         index += 1
 
