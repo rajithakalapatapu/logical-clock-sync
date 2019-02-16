@@ -17,7 +17,7 @@ server_window = tk.Tk()
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_host = "127.0.0.1"
 server_port = 9999
-connected_clients = []
+connected_clients = {}
 client_labels = [None, None, None]
 scroll_width = 70
 scroll_height = 10
@@ -27,32 +27,78 @@ scr = scrolledtext.ScrolledText(
 def_selector = selectors.DefaultSelector()
 
 
+def get_address_from_name(name):
+    for address, client in connected_clients.items():
+        if client[2] == name:
+            return address
+
+
+def parse_data_from_client(client_name, data_from_client):
+    tokens = data_from_client.split(":")
+    mode, destination, message = tokens[0], tokens[1], tokens[2]
+    print("Message {} destined to {} via mode {}".format(message, destination, mode))
+    full_message = "{}:{}:{}".format(mode, connected_clients[client_name][3], message)
+    print(connected_clients)
+    if mode == "1-1":
+        print(
+            "Sending message to {}".format(
+                connected_clients[get_address_from_name(destination)]
+            )
+        )
+        connected_clients[get_address_from_name(destination)][0].sendall(
+            bytes(full_message, "UTF-8")
+        )
+    elif mode == "1-N":
+        for name, client in connected_clients.items():
+            client[0].sendall(bytes(full_message, "UTF-8"))
+    else:
+        pass
+
+
 def read_from_client(client_connection, event_mask):
     print(
         "Client activity on {} with event mask {}".format(client_connection, event_mask)
     )
-    client_address = client_connection.getpeername()
-    data_from_client = client_connection.recv(MAX_MESSAGE_SIZE)
+    client_name = client_connection.getpeername()
+    data_from_client = client_connection.recv(MAX_MESSAGE_SIZE).decode("UTF-8")
     if data_from_client:
-        print("Received {} from {}".format(data_from_client, client_address))
-        scr.insert(END, "\n" + data_from_client.decode("UTF-8"))
+        print("Received {} from {}".format(data_from_client, client_name))
+        scr.insert(END, "{}: \t {}\n".format(client_name, data_from_client))
+        parse_data_from_client(client_name, data_from_client)
     else:
-        def_selector.unregister(client_connection)
-        client_connection.close()
+        print("Closing socket to {}".format(client_connection))
+        unregister_client_name(client_connection)
 
 
-def show_client_name(client_sock, client_address, data_bytes):
+def unregister_client_name(client_connection):
+    def_selector.unregister(client_connection)
+    client_address = client_connection.getpeername()
+    del connected_clients[client_address]
+    update_client_labels(connected_clients)
+    client_connection.close()
+
+
+def update_client_labels(connected_clients):
+    for i in range(len(client_labels)):
+        client_labels[i]["text"] = ""
+    index = 0
+    for name, client in connected_clients.items():
+        client_labels[index]["text"] = client[2].strip()
+        index += 1
+
+
+def register_client_name(client_sock, client_address, data_bytes):
     data_bytes = data_bytes.decode("UTF-8")
     client_name = data_bytes.split(":")[1]
     print(
-        "Client {} connected with name{}".format(
+        "Client {} connected with name {}".format(
             (client_sock, client_address), client_name
         )
     )
     global connected_clients
-    connected_clients.append((client_sock, client_address, client_name))
+    connected_clients[client_address] = (client_sock, client_address, client_name)
     print("List of all connected_clients {}".format(connected_clients))
-    client_labels[len(connected_clients) - 1]["text"] = client_name.strip()
+    update_client_labels(connected_clients)
 
 
 def accept_new_client(server, event_mask):
@@ -61,7 +107,9 @@ def accept_new_client(server, event_mask):
     )
     client_sock, client_address = server.accept()
     client_sock.setblocking(False)
-    show_client_name(client_sock, client_address, client_sock.recv(2048))
+    register_client_name(
+        client_sock, client_address, client_sock.recv(MAX_MESSAGE_SIZE)
+    )
     def_selector.register(client_sock, selectors.EVENT_READ, read_from_client)
 
 
@@ -82,11 +130,20 @@ def setup_server_socket():
         select_loop.start()
 
     except OSError as e:
-        print("An error occurred {str(e)}. \n")
+        print("An error occurred {}. \n".format(str(e)))
         print("Please fix before relaunching.")
         import sys
 
         sys.exit(1)
+
+
+def exit_program():
+    print("Existing clients are {}".format(connected_clients))
+    for name, client in connected_clients.items():
+        print("Closing connection to client {}".format(name))
+        def_selector.unregister(client[0])
+        client[0].close()
+    server_window.destroy()
 
 
 def setup_server_window():
@@ -104,6 +161,10 @@ def setup_server_window():
         child.grid_configure(padx=8, pady=4)
 
     scr.grid(column=0, columnspan=20, padx=10, pady=10)
+
+    exit_button = ttk.Button(server_window, text="Exit", command=exit_program)
+    exit_button.grid(column=0, columnspan=2, padx=10, pady=10)
+    server_window.protocol("WM_DELETE_WINDOW", exit_program)
 
 
 def main():

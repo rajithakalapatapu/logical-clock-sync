@@ -38,6 +38,11 @@ def connect_to_server():
         connected = False
 
 
+def exit_program():
+    client_socket.close()
+    client_window.destroy()
+
+
 def setup_client_window():
     client_window.title("Client UI")
     client_window.geometry("800x640")
@@ -62,6 +67,10 @@ def setup_client_window():
     msg_send = ttk.Button(client_window, text="Send", command=send_to_server)
     msg_send.grid(column=2, row=20, padx=30, pady=25)
 
+    exit_button = ttk.Button(client_window, text="Exit", command=exit_program)
+    exit_button.grid(column=1, row=25, padx=10, pady=10)
+    client_window.protocol("WM_DELETE_WINDOW", exit_program)
+
 
 def send_to_server():
     msg = msg_client_entered.get()
@@ -79,7 +88,11 @@ def receive_from_server():
         while True:
             data_from_server = client_socket.recv(MAX_MESSAGE_SIZE)
             data_from_server = data_from_server.decode("UTF-8")
-            msg_area.insert(END, "\n" + data_from_server)
+            if data_from_server:
+                msg_area.insert(END, "\n" + data_from_server)
+            else:
+                print("Closing this window as the server exited.")
+                exit_program()
     except OSError as e:
         print(e)
 
