@@ -3,6 +3,8 @@ from tkinter import ttk, scrolledtext, messagebox, END
 import socket
 from threading import Thread
 
+MAX_MESSAGE_SIZE = 2048
+
 server_host = "127.0.0.1"
 server_port = 9999
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -75,9 +77,9 @@ def send_to_server():
 def receive_from_server():
     try:
         while True:
-            data_from_server = client_socket.recv(2048)
+            data_from_server = client_socket.recv(MAX_MESSAGE_SIZE)
             data_from_server = data_from_server.decode("UTF-8")
-            msg_area.insert(END, data_from_server)
+            msg_area.insert(END, "\n" + data_from_server)
     except OSError as e:
         print(e)
 
@@ -86,8 +88,11 @@ msg_send = ttk.Button(client_window, text="Send", command=send_to_server)
 
 
 def main():
-    setup_client_window()
-    client_window.mainloop()
+    try:
+        setup_client_window()
+        client_window.mainloop()
+    except RuntimeError as e:
+        print("Exiting...")
 
 
 if __name__ == "__main__":
