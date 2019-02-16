@@ -19,7 +19,8 @@ msg_area = scrolledtext.ScrolledText(
     client_window, width=scroll_width, height=scroll_height, wrap=tk.WORD
 )
 default_msg = "Enter message here..."
-
+message_cast_option = tk.IntVar()
+chosen_client = tk.StringVar()
 
 def connect_to_server():
     try:
@@ -72,6 +73,35 @@ def setup_client_window():
     exit_button.grid(column=1, row=25, padx=10, pady=10)
     client_window.protocol("WM_DELETE_WINDOW", exit_program)
 
+    message_cast_options = ["1:1", "1:N"]
+    for index, option in enumerate(message_cast_options):
+        radio = ttk.Radiobutton(
+            client_window,
+            text=option,
+            variable=message_cast_option,
+            command=on_message_cast_option,
+            value=index,
+        )
+        radio.grid(column=index, row=15, padx=10, pady=10)
+
+
+def on_choosing_client():
+    print(chosen_client.get())
+
+def on_message_cast_option():
+    if message_cast_option.get() == 0:
+        # 1-1
+        print("1-1")
+        get_clients_from_server()
+    else:
+        # 1-N
+        print("1-N")
+
+
+def get_clients_from_server():
+    msg = "get:all:clients"
+    client_socket.send(bytes(msg, "UTF-8"))
+
 
 def send_to_server():
     msg = msg_client_entered.get()
@@ -80,8 +110,31 @@ def send_to_server():
         msg_client_entered.set(default_msg)
     else:
         msg_client_entered.set("")
-        client_socket.send(bytes(msg, "UTF-8"))
+        global message_cast_option
+        if message_cast_option.get() == 0:
+            client_socket.send(bytes("{}:{}:{}".format("1-1", chosen_client.get(), msg), "UTF-8"))
+        else:
+            client_socket.send(bytes("{}:{}:{}".format("1-N", "ignored", msg), "UTF-8"))
         print("Sent message {} to the server".format(msg))
+
+
+def display_client_names(names):
+    for index, name in enumerate(names):
+        radio = ttk.Radiobutton(
+            client_window,
+            text=name,
+            variable=chosen_client,
+            command=on_choosing_client,
+            value=name,
+        )
+        radio.grid(column=index, row=17, padx=10, pady=10)
+
+
+def parse_incoming_message(msg):
+    print(msg)
+    tokens = msg.split(":")
+    if tokens[0] == "get":
+        display_client_names(tokens[1:])
 
 
 def receive_from_server():
@@ -91,6 +144,7 @@ def receive_from_server():
             data_from_server = data_from_server.decode("UTF-8")
             if data_from_server:
                 msg_area.insert(END, "\n" + data_from_server)
+                parse_incoming_message(data_from_server)
             else:
                 print("Closing this window as the server exited.")
                 exit_program()

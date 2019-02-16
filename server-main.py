@@ -57,7 +57,7 @@ def parse_data_from_client(client_address, data_from_client):
         for address, client in connected_clients.items():
             client[0].sendall(bytes(full_message, "UTF-8"))
     elif mode == "get":
-        names = []
+        names = ["get"]
         for address, client in connected_clients.items():
             names.append(client[2])
         connected_clients[client_address][0].sendall(bytes(":".join(names), "UTF-8"))
