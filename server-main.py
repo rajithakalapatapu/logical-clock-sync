@@ -3,6 +3,7 @@ from tkinter import ttk, scrolledtext, END
 import socket
 from threading import Thread
 import selectors
+from http_helper import *
 
 # references: Python GUI cookbook
 # https://docs.python.org/3/howto/sockets.html#creating-a-socket
@@ -14,12 +15,8 @@ import selectors
 # https://medium.com/swlh/lets-write-a-chat-app-in-python-f6783a9ac170
 
 
-MAX_MESSAGE_SIZE = 2048
-
 server_window = tk.Tk()
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_host = "127.0.0.1"
-server_port = 9999
 connected_clients = {}
 client_labels = [None, None, None]
 scroll_width = 70
@@ -74,9 +71,7 @@ def read_from_client(client_connection, event_mask):
         print("Received '{}' from '{}'".format(data_from_client, client_address))
         scr.insert(END, "{}: \t {}\n".format(client_address, data_from_client))
         if "client-name" in data_from_client:
-            register_client_name(
-                client_connection, client_address, data_from_client
-            )
+            register_client_name(client_connection, client_address, data_from_client)
         else:
             parse_data_from_client(client_address, data_from_client)
     else:
@@ -101,19 +96,11 @@ def update_client_labels(clients):
         index += 1
 
 
-def extract_client_name(data):
-    client_name = ""
-    lines = data.split('\n')
-    for line in lines[1:]:
-        if "name" in line:
-            client_name = line.split(':')[1]
-    return client_name
-
-
 def register_client_name(client_sock, client_address, data_str):
+    client_name = extract_client_name(data_str)
     print(
         "Client {} connected with name {}".format(
-            (client_sock, client_address), extract_client_name(data_str)
+            (client_sock, client_address), client_name
         )
     )
     global connected_clients
