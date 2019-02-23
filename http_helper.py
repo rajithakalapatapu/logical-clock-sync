@@ -58,6 +58,7 @@ def prepare_post_client_name_request(name_entered):
 
 def prepare_http_msg_response(status, body):
     import datetime
+
     first_line = "HTTP/1.0 {}".format(status)
     headers = {
         "Content-Type": "Application/json",
@@ -69,7 +70,10 @@ def prepare_http_msg_response(status, body):
     for key, value in headers.items():
         response_headers.append("{}:{}".format(key, value))
     import json
-    http_msg_response = "{}\n{}\n{}\n".format(first_line, response_headers, json.dumps(body))
+
+    http_msg_response = "{}\n{}\n{}\n".format(
+        first_line, response_headers, json.dumps(body)
+    )
     return http_msg_response
 
 
@@ -78,10 +82,11 @@ def prepare_get_all_client_names_response(names):
 
 
 def prepare_post_client_name_response():
-    pass
+    return prepare_http_msg_response("200 OK", REGISTER_CLIENT_NAME)
 
 
 def parse_client_name_response(http_response):
-    names = http_response.split('\n')[2]
+    names = http_response.split("\n")[2]
     import json
+
     return json.loads(names)

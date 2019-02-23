@@ -48,9 +48,7 @@ def send_one_to_one_message(destination, message):
     import json
 
     client_socket.send(
-        bytes(
-            prepare_http_msg_request("POST", SEND_MESSAGE, json.dumps(body)), "UTF-8"
-        )
+        bytes(prepare_http_msg_request("POST", SEND_MESSAGE, json.dumps(body)), "UTF-8")
     )
 
 
@@ -59,9 +57,7 @@ def send_one_to_n_message(msg):
     import json
 
     client_socket.send(
-        bytes(
-            prepare_http_msg_request("POST", SEND_MESSAGE, json.dumps(body)), "UTF-8"
-        )
+        bytes(prepare_http_msg_request("POST", SEND_MESSAGE, json.dumps(body)), "UTF-8")
     )
 
 
@@ -92,10 +88,23 @@ def display_client_names(names):
         radio.grid(column=index, row=17, padx=10, pady=10)
 
 
+def parse_connection_request_response(msg):
+    if "200 OK" in msg:
+        global connected
+        connected = True
+        connection_status.config(text="Connected to server...")
+
+    else:
+        # connection failed
+        print("Try connecting again...")
+
+
 def parse_incoming_message(msg):
     print("Received {} from server".format(msg))
     if GET_ALL_CLIENTS in msg:
         display_client_names(parse_client_name_response(msg)[1:])
+    elif REGISTER_CLIENT_NAME in msg:
+        parse_connection_request_response(msg)
 
 
 def receive_from_server():
@@ -123,14 +132,14 @@ def connect_to_server():
         name_entered = username.get()
         global client_socket
         client_socket.connect((server_host, server_port))
-        client_socket.sendall(bytes(prepare_post_client_name_request(name_entered), "UTF-8"))
-        connection_status.config(text="Connected to server...")
+        client_socket.sendall(
+            bytes(prepare_post_client_name_request(name_entered), "UTF-8")
+        )
         t = Thread(target=receive_from_server)
         t.daemon = True
         t.start()
-        global connected
-        connected = True
     except OSError:
+        global connected
         connected = False
 
 

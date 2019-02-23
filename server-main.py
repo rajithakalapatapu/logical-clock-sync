@@ -111,6 +111,10 @@ def register_client_name(client_sock, client_address, data_str):
     connected_clients[client_address] = (client_sock, client_address, client_name)
     print("List of all connected_clients {}".format(connected_clients))
     update_client_labels(connected_clients)
+    sent = connected_clients[client_address][0].send(
+        bytes(prepare_post_client_name_response(), "UTF-8")
+    )
+    print("Client registered name {} Sent 200 OK in {} bytes".format(client_name, sent))
 
 
 def accept_new_client(server, event_mask):
