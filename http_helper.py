@@ -2,7 +2,9 @@ MAX_MESSAGE_SIZE = 2048
 
 server_host = "127.0.0.1"
 server_port = 9999
-
+GET_ALL_CLIENTS = "all/client/names"
+REGISTER_CLIENT_NAME = "register/client/name"
+SEND_MESSAGE = "send/message"
 
 def extract_client_name(http_request):
     client_name = ""
@@ -26,7 +28,7 @@ def extract_message_details(http_request):
     )
 
 
-def prepare_http_msg_to_send(verb, resource, body):
+def prepare_http_msg_request(verb, resource, body):
     import datetime
 
     request = []
@@ -45,12 +47,41 @@ def prepare_http_msg_to_send(verb, resource, body):
     return http_msg_to_send
 
 
-def prepare_get_all_client_names():
-    resource = "get-all-clients"
-    return prepare_http_msg_to_send("GET", resource, None)
+def prepare_get_all_client_names_request():
+    return prepare_http_msg_request("GET", GET_ALL_CLIENTS, None)
 
 
-def prepare_post_client_name(name_entered):
+def prepare_post_client_name_request(name_entered):
     body = "name:{}".format(name_entered)
-    resource = "client-name"
-    return prepare_http_msg_to_send("POST", resource, body)
+    return prepare_http_msg_request("POST", REGISTER_CLIENT_NAME, body)
+
+
+def prepare_http_msg_response(status, body):
+    import datetime
+    first_line = "HTTP/1.0 {}".format(status)
+    headers = {
+        "Content-Type": "Application/json",
+        "Content-Length": MAX_MESSAGE_SIZE,
+        "Host": "{}".format(server_host),
+        "Date": datetime.datetime.utcnow(),
+    }
+    response_headers = []
+    for key, value in headers.items():
+        response_headers.append("{}:{}".format(key, value))
+    import json
+    http_msg_response = "{}\n{}\n{}\n".format(first_line, response_headers, json.dumps(body))
+    return http_msg_response
+
+
+def prepare_get_all_client_names_response(names):
+    return prepare_http_msg_response("200 OK", names)
+
+
+def prepare_post_client_name_response():
+    pass
+
+
+def parse_client_name_response(http_response):
+    names = http_response.split('\n')[2]
+    import json
+    return json.loads(names)

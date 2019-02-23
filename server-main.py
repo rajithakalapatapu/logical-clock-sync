@@ -67,14 +67,14 @@ def read_from_client(client_connection, event_mask):
         print("Received '{}' from '{}'".format(data_from_client, client_address))
         scr.insert(END, "{}: \t {}\n".format(client_address, data_from_client))
         scr.see(END)
-        if "client-name" in data_from_client:
+        if REGISTER_CLIENT_NAME in data_from_client:
             register_client_name(client_connection, client_address, data_from_client)
-        elif "get-all-clients" in data_from_client:
-            names = ["get"]
+        elif GET_ALL_CLIENTS in data_from_client:
+            names = [GET_ALL_CLIENTS]
             for address, client in connected_clients.items():
                 names.append(client[2])
             connected_clients[client_address][0].sendall(
-                bytes(":".join(names), "UTF-8")
+                bytes(prepare_get_all_client_names_response(names), "UTF-8")
             )
         else:
             parse_data_from_client(client_address, data_from_client)

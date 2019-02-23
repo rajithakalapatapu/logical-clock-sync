@@ -25,17 +25,17 @@ def on_choosing_client():
 
 
 def get_clients_from_server():
-    client_socket.send(bytes(prepare_get_all_client_names(), "UTF-8"))
+    client_socket.send(bytes(prepare_get_all_client_names_request(), "UTF-8"))
 
 
 def on_message_cast_option():
     if message_cast_option.get() == 0:
         # 1-1
-        print("1-1")
+        print("Client intends to send a 1-1 message - get client names")
         get_clients_from_server()
     else:
         # 1-N
-        print("1-N")
+        print("Client intends to send a 1-1N message")
 
 
 def exit_program():
@@ -49,7 +49,7 @@ def send_one_to_one_message(destination, message):
 
     client_socket.send(
         bytes(
-            prepare_http_msg_to_send("POST", "send-message", json.dumps(body)), "UTF-8"
+            prepare_http_msg_request("POST", SEND_MESSAGE, json.dumps(body)), "UTF-8"
         )
     )
 
@@ -60,7 +60,7 @@ def send_one_to_n_message(msg):
 
     client_socket.send(
         bytes(
-            prepare_http_msg_to_send("POST", "send-message", json.dumps(body)), "UTF-8"
+            prepare_http_msg_request("POST", SEND_MESSAGE, json.dumps(body)), "UTF-8"
         )
     )
 
@@ -93,10 +93,9 @@ def display_client_names(names):
 
 
 def parse_incoming_message(msg):
-    print(msg)
-    tokens = msg.split(":")
-    if tokens[0] == "get":
-        display_client_names(tokens[1:])
+    print("Received {} from server".format(msg))
+    if GET_ALL_CLIENTS in msg:
+        display_client_names(parse_client_name_response(msg)[1:])
 
 
 def receive_from_server():
@@ -124,7 +123,7 @@ def connect_to_server():
         name_entered = username.get()
         global client_socket
         client_socket.connect((server_host, server_port))
-        client_socket.sendall(bytes(prepare_post_client_name(name_entered), "UTF-8"))
+        client_socket.sendall(bytes(prepare_post_client_name_request(name_entered), "UTF-8"))
         connection_status.config(text="Connected to server...")
         t = Thread(target=receive_from_server)
         t.daemon = True
