@@ -66,6 +66,7 @@ def read_from_client(client_connection, event_mask):
     if data_from_client:
         print("Received '{}' from '{}'".format(data_from_client, client_address))
         scr.insert(END, "{}: \t {}\n".format(client_address, data_from_client))
+        scr.see(END)
         if "client-name" in data_from_client:
             register_client_name(client_connection, client_address, data_from_client)
         elif "get-all-clients" in data_from_client:

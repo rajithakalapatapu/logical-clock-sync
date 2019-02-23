@@ -106,6 +106,7 @@ def receive_from_server():
             data_from_server = data_from_server.decode("UTF-8")
             if data_from_server:
                 msg_area.insert(END, "\n" + data_from_server)
+                msg_area.see(END)
                 parse_incoming_message(data_from_server)
             else:
                 print("Closing this window as the server exited.")
