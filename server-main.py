@@ -34,8 +34,7 @@ def get_address_from_name(name):
 
 
 def parse_data_from_client(client_address, data_from_client):
-    tokens = data_from_client.split(":")
-    mode, destination, message = tokens[0], tokens[1], tokens[2]
+    mode, destination, message = extract_message_details(data_from_client)
     print("Message {} destined to {} via mode {}".format(message, destination, mode))
     full_message = "{}:{}:{}".format(
         mode, connected_clients[client_address][2], message
@@ -54,10 +53,7 @@ def parse_data_from_client(client_address, data_from_client):
         for address, client in connected_clients.items():
             client[0].sendall(bytes(full_message, "UTF-8"))
     elif mode == "get":
-        names = ["get"]
-        for address, client in connected_clients.items():
-            names.append(client[2])
-        connected_clients[client_address][0].sendall(bytes(":".join(names), "UTF-8"))
+        pass
 
 
 def read_from_client(client_connection, event_mask):
@@ -72,6 +68,13 @@ def read_from_client(client_connection, event_mask):
         scr.insert(END, "{}: \t {}\n".format(client_address, data_from_client))
         if "client-name" in data_from_client:
             register_client_name(client_connection, client_address, data_from_client)
+        elif "get-all-clients" in data_from_client:
+            names = ["get"]
+            for address, client in connected_clients.items():
+                names.append(client[2])
+            connected_clients[client_address][0].sendall(
+                bytes(":".join(names), "UTF-8")
+            )
         else:
             parse_data_from_client(client_address, data_from_client)
     else:

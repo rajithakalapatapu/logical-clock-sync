@@ -43,12 +43,26 @@ def exit_program():
     client_window.destroy()
 
 
-def send_1_1_message(destination, message):
-    client_socket.send(bytes("{}:{}:{}".format("1-1", destination, message), "UTF-8"))
+def send_one_to_one_message(destination, message):
+    body = {"mode": "1-1", "destination": destination, "message": message}
+    import json
+
+    client_socket.send(
+        bytes(
+            prepare_http_msg_to_send("POST", "send-message", json.dumps(body)), "UTF-8"
+        )
+    )
 
 
-def send_1_N_message(msg):
-    client_socket.send(bytes("{}:{}:{}".format("1-N", "ignore", msg), "UTF-8"))
+def send_one_to_n_message(msg):
+    body = {"mode": "1-N", "message": msg}
+    import json
+
+    client_socket.send(
+        bytes(
+            prepare_http_msg_to_send("POST", "send-message", json.dumps(body)), "UTF-8"
+        )
+    )
 
 
 def send_to_server():
@@ -60,9 +74,9 @@ def send_to_server():
         msg_client_entered.set("")
         global message_cast_option
         if message_cast_option.get() == 0:
-            send_1_1_message(chosen_client.get(), msg)
+            send_one_to_one_message(chosen_client.get(), msg)
         else:
-            send_1_N_message(msg)
+            send_one_to_n_message(msg)
         print("Sent message {} to the server".format(msg))
 
 

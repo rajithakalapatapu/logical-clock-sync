@@ -13,6 +13,19 @@ def extract_client_name(http_request):
     return client_name
 
 
+def extract_message_details(http_request):
+    line = http_request.split("\n")[6]
+    print("Line to process {}".format(line))
+    import json
+
+    line = json.loads(line)
+    return (
+        line.get("mode", None),
+        line.get("destination", None),
+        line.get("message", None),
+    )
+
+
 def prepare_http_msg_to_send(verb, resource, body):
     import datetime
 
