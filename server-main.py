@@ -35,6 +35,11 @@ def get_address_from_name(name):
             return address
 
 
+def add_msg_to_scrollbox(msg):
+    scr.insert(END, msg)
+    scr.see(END)
+
+
 def parse_data_from_client(client_address, data_from_client):
     mode, destination, message = extract_message_details(
         data_from_client.split("\n")[7]
@@ -51,14 +56,16 @@ def parse_data_from_client(client_address, data_from_client):
                 "*" * 8, connected_clients[get_address_from_name(destination)]
             )
         )
+        add_msg_to_scrollbox("{}\n".format(response_message))
         connected_clients[get_address_from_name(destination)][0].sendall(
             bytes(response_message, "UTF-8")
         )
     elif mode == "1-N":
         print("{} Sending message to all clients".format("*" * 8))
+        add_msg_to_scrollbox("{}\n".format(response_message))
         for address, client in connected_clients.items():
             client[0].sendall(bytes(response_message, "UTF-8"))
-    elif mode == "get":
+    else:
         pass
 
 
@@ -73,16 +80,17 @@ def read_from_client(client_connection, event_mask):
     data_from_client = client_connection.recv(MAX_MESSAGE_SIZE).decode("UTF-8")
     if data_from_client:
         print("\t Received '{}' from '{}'".format(data_from_client, client_address))
-        scr.insert(END, "{}: \t {}\n".format(client_address, data_from_client))
-        scr.see(END)
+        add_msg_to_scrollbox("{}: \t {}\n".format(client_address, data_from_client))
         if REGISTER_CLIENT_NAME in data_from_client:
             register_client_name(client_connection, client_address, data_from_client)
         elif GET_ALL_CLIENTS in data_from_client:
             names = [GET_ALL_CLIENTS]
             for address, client in connected_clients.items():
                 names.append(client[2])
+            response_message = prepare_get_all_client_names_response(names)
+            add_msg_to_scrollbox("{}\n".format(response_message))
             connected_clients[client_address][0].sendall(
-                bytes(prepare_get_all_client_names_response(names), "UTF-8")
+                bytes(response_message, "UTF-8")
             )
         else:
             parse_data_from_client(client_address, data_from_client)
@@ -94,9 +102,11 @@ def read_from_client(client_connection, event_mask):
 def unregister_client_name(client_connection):
     def_selector.unregister(client_connection)
     client_address = client_connection.getpeername()
+    client_name = connected_clients[client_address][2]
     del connected_clients[client_address]
     update_client_labels(connected_clients)
     client_connection.close()
+    add_msg_to_scrollbox("Client {} has disconnected \n".format(client_name))
 
 
 def update_client_labels(clients):
@@ -120,9 +130,12 @@ def register_client_name(client_sock, client_address, data_str):
     print("List of all connected_clients")
     pp.pprint(connected_clients)
     update_client_labels(connected_clients)
+    response_message = prepare_post_client_name_response()
+    add_msg_to_scrollbox("{}\n".format(response_message))
     sent = connected_clients[client_address][0].send(
-        bytes(prepare_post_client_name_response(), "UTF-8")
+        bytes(response_message, "UTF-8")
     )
+    add_msg_to_scrollbox("Client {} registered \n".format(client_name))
     print("Client registered name {} Sent 200 OK in {} bytes".format(client_name, sent))
 
 
