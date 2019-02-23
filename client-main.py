@@ -28,8 +28,7 @@ def on_choosing_client():
 
 
 def get_clients_from_server():
-    msg = "get:all:clients"
-    client_socket.send(bytes(msg, "UTF-8"))
+    client_socket.send(bytes(prepare_get_all_client_names(), "UTF-8"))
 
 
 def on_message_cast_option():
@@ -105,14 +104,44 @@ def receive_from_server():
         print(e)
 
 
+def prepare_http_msg_to_send(verb, resource, body):
+    import datetime
+
+    request = []
+    headers = {
+        "Content-Type": "Application/x-www-form-urlencoded",
+        "Content-Length": MAX_MESSAGE_SIZE,
+        "Host": "{}".format(server_host),
+        "Date": datetime.datetime.utcnow(),
+    }
+    for key, value in headers.items():
+        request.append("{}:{}".format(key, value))
+
+    http_msg_to_send = "{} {} HTTP/1.0\n{}\n\n{}\n".format(verb,
+        resource, "\n".join(request), body
+    )
+    return http_msg_to_send
+
+
+def prepare_get_all_client_names():
+    resource = "get-all-clients"
+    return prepare_http_msg_to_send("GET", resource, None)
+
+def prepare_client_name_post(name_entered):
+    body = "name:{}".format(name_entered)
+    resource = "client-name"
+    return prepare_http_msg_to_send("POST", resource, body)
+
+
 def connect_to_server():
     try:
         if not username.get():
             messagebox.showerror("Username invalid", "Empty username is invalid")
             return
-        name_entered = "name:" + username.get()
+        name_entered = username.get()
+        global client_socket
         client_socket.connect((server_host, server_port))
-        client_socket.sendall(bytes(name_entered, "UTF-8"))
+        client_socket.sendall(bytes(prepare_client_name_post(name_entered), "UTF-8"))
         connection_status.config(text="Connected to server...")
         t = Thread(target=receive_from_server)
         t.daemon = True

@@ -67,12 +67,18 @@ def read_from_client(client_connection, event_mask):
     print(
         "Client activity on {} with event mask {}".format(client_connection, event_mask)
     )
+
     client_address = client_connection.getpeername()
     data_from_client = client_connection.recv(MAX_MESSAGE_SIZE).decode("UTF-8")
     if data_from_client:
-        print("Received {} from {}".format(data_from_client, client_address))
+        print("Received '{}' from '{}'".format(data_from_client, client_address))
         scr.insert(END, "{}: \t {}\n".format(client_address, data_from_client))
-        parse_data_from_client(client_address, data_from_client)
+        if "client-name" in data_from_client:
+            register_client_name(
+                client_connection, client_address, data_from_client
+            )
+        else:
+            parse_data_from_client(client_address, data_from_client)
     else:
         print("Closing socket to {}".format(client_connection))
         unregister_client_name(client_connection)
@@ -95,12 +101,19 @@ def update_client_labels(clients):
         index += 1
 
 
-def register_client_name(client_sock, client_address, data_bytes):
-    data_bytes = data_bytes.decode("UTF-8")
-    client_name = data_bytes.split(":")[1]
+def extract_client_name(data):
+    client_name = ""
+    lines = data.split('\n')
+    for line in lines[1:]:
+        if "name" in line:
+            client_name = line.split(':')[1]
+    return client_name
+
+
+def register_client_name(client_sock, client_address, data_str):
     print(
         "Client {} connected with name {}".format(
-            (client_sock, client_address), client_name
+            (client_sock, client_address), extract_client_name(data_str)
         )
     )
     global connected_clients
@@ -115,9 +128,7 @@ def accept_new_client(server, event_mask):
     )
     client_sock, client_address = server.accept()
     client_sock.setblocking(False)
-    register_client_name(
-        client_sock, client_address, client_sock.recv(MAX_MESSAGE_SIZE)
-    )
+
     def_selector.register(client_sock, selectors.EVENT_READ, read_from_client)
 
 
