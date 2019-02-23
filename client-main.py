@@ -32,7 +32,9 @@ def on_message_cast_option():
     if message_cast_option.get() == 0:
         # 1-1
         print(
-            "{} Client intends to send a 1-1 message - get client names".format("*" * 4)
+            "{} Client intends to send a 1-1 message - so get client names".format(
+                "*" * 4
+            )
         )
         get_clients_from_server()
     else:

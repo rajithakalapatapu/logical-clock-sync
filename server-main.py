@@ -37,7 +37,7 @@ def get_address_from_name(name):
 
 def parse_data_from_client(client_address, data_from_client):
     mode, destination, message = extract_message_details(
-        data_from_client.split("\n")[6]
+        data_from_client.split("\n")[7]
     )
     print("Message {} destined to {} via mode {}".format(message, destination, mode))
 

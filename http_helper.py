@@ -28,15 +28,16 @@ def extract_message_details(line):
     )
 
 
-def prepare_http_msg_request(verb, resource, body):
+def prepare_http_msg_request(verb, resource, body=""):
     import datetime
 
     request = []
     headers = {
         "Content-Type": "Application/x-www-form-urlencoded",
-        "Content-Length": MAX_MESSAGE_SIZE,
+        "Content-Length": len(body),
         "Host": "{}".format(server_host),
         "Date": datetime.datetime.utcnow(),
+        "User-Agent": "Custom HTTP endpoint written for CSE5306 lab",
     }
     for key, value in headers.items():
         request.append("{}:{}".format(key, value))
@@ -48,7 +49,7 @@ def prepare_http_msg_request(verb, resource, body):
 
 
 def prepare_get_all_client_names_request():
-    return prepare_http_msg_request("GET", GET_ALL_CLIENTS, None)
+    return prepare_http_msg_request("GET", GET_ALL_CLIENTS)
 
 
 def prepare_post_client_name_request(name_entered):
@@ -56,15 +57,16 @@ def prepare_post_client_name_request(name_entered):
     return prepare_http_msg_request("POST", REGISTER_CLIENT_NAME, body)
 
 
-def prepare_http_msg_response(status, body):
+def prepare_http_msg_response(status, body=""):
     import datetime
 
     first_line = "HTTP/1.0 {}".format(status)
     headers = {
         "Content-Type": "Application/json",
-        "Content-Length": MAX_MESSAGE_SIZE,
+        "Content-Length": len(body),
         "Host": "{}".format(server_host),
         "Date": datetime.datetime.utcnow(),
+        "User-Agent": "Custom HTTP endpoint written for CSE5306 lab",
     }
     response_headers = []
     for key, value in headers.items():
