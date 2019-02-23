@@ -31,12 +31,13 @@ def get_clients_from_server():
 def on_message_cast_option():
     if message_cast_option.get() == 0:
         # 1-1
-        print("{} Client intends to send a 1-1 message - get client names".format("*"*4))
+        print(
+            "{} Client intends to send a 1-1 message - get client names".format("*" * 4)
+        )
         get_clients_from_server()
     else:
         # 1-N
-        print("{} Client intends to send a 1-N message".format("*"*4))
-
+        print("{} Client intends to send a 1-N message".format("*" * 4))
 
 
 def exit_program():
@@ -74,7 +75,7 @@ def send_to_server():
             send_one_to_one_message(chosen_client.get(), msg)
         else:
             send_one_to_n_message(msg)
-        print("{} Sent message {} to the server".format("*"*4, msg))
+        print("{} Sent message {} to the server".format("*" * 4, msg))
 
 
 def display_client_names(names):

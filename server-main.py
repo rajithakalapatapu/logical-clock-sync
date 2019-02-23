@@ -48,14 +48,14 @@ def parse_data_from_client(client_address, data_from_client):
     if mode == "1-1":
         print(
             "{} Sending message to {}".format(
-                "*"*8, connected_clients[get_address_from_name(destination)]
+                "*" * 8, connected_clients[get_address_from_name(destination)]
             )
         )
         connected_clients[get_address_from_name(destination)][0].sendall(
             bytes(response_message, "UTF-8")
         )
     elif mode == "1-N":
-        print("{} Sending message to all clients".format("*"*8))
+        print("{} Sending message to all clients".format("*" * 8))
         for address, client in connected_clients.items():
             client[0].sendall(bytes(response_message, "UTF-8"))
     elif mode == "get":
@@ -64,7 +64,9 @@ def parse_data_from_client(client_address, data_from_client):
 
 def read_from_client(client_connection, event_mask):
     print(
-        "{} Client activity on {} with event mask {}".format("*"*4, client_connection, event_mask)
+        "{} Client activity on {} with event mask {}".format(
+            "*" * 4, client_connection, event_mask
+        )
     )
 
     client_address = client_connection.getpeername()
