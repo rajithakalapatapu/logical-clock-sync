@@ -47,6 +47,14 @@ def exit_program():
     client_window.destroy()
 
 
+def send_1_1_message(destination, message):
+    client_socket.send(bytes("{}:{}:{}".format("1-1", destination, message), "UTF-8"))
+
+
+def send_1_N_message(msg):
+    client_socket.send(bytes("{}:{}:{}".format("1-N", "ignore", msg), "UTF-8"))
+
+
 def send_to_server():
     msg = msg_client_entered.get()
     global connected
@@ -56,11 +64,9 @@ def send_to_server():
         msg_client_entered.set("")
         global message_cast_option
         if message_cast_option.get() == 0:
-            client_socket.send(
-                bytes("{}:{}:{}".format("1-1", chosen_client.get(), msg), "UTF-8")
-            )
+            send_1_1_message(chosen_client.get(), msg)
         else:
-            client_socket.send(bytes("{}:{}:{}".format("1-N", "ignore", msg), "UTF-8"))
+            send_1_N_message(msg)
         print("Sent message {} to the server".format(msg))
 
 
