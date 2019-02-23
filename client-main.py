@@ -107,7 +107,10 @@ def display_incoming_message(msg):
         import json
 
         mode, source, message = extract_message_details(json.loads(msg.split("\n")[2]))
-        display_msg = "{} sent a {}: \n {}".format(source, mode, message)
+        if mode == "ACK":
+            display_msg = "Message sent successfully!"
+        else:
+            display_msg = "{} sent a {}: \n {}".format(source, mode, message)
         msg_area.insert(END, "\n" + display_msg)
         msg_area.see(END)
     else:

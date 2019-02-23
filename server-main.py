@@ -46,7 +46,7 @@ def parse_data_from_client(client_address, data_from_client):
     )
     print("Message {} destined to {} via mode {}".format(message, destination, mode))
 
-    response_message = prepare_send_message_response(
+    response_message = prepare_fwd_msg_to_client(
         mode, connected_clients[client_address][2], message
     )
 
@@ -60,11 +60,19 @@ def parse_data_from_client(client_address, data_from_client):
         connected_clients[get_address_from_name(destination)][0].sendall(
             bytes(response_message, "UTF-8")
         )
+        print("{} Sending ack back to source {}".format("*" * 8, client_address))
+        connected_clients[client_address][0].sendall(
+            bytes(prepare_ack_message(), "UTF-8")
+        )
     elif mode == "1-N":
         print("{} Sending message to all clients".format("*" * 8))
         add_msg_to_scrollbox("{}\n".format(response_message))
         for address, client in connected_clients.items():
             client[0].sendall(bytes(response_message, "UTF-8"))
+        print("{} Sending ack back to source {}".format("*" * 8, client_address))
+        connected_clients[client_address][0].sendall(
+            bytes(prepare_ack_message(), "UTF-8")
+        )
     else:
         pass
 
@@ -132,9 +140,7 @@ def register_client_name(client_sock, client_address, data_str):
     update_client_labels(connected_clients)
     response_message = prepare_post_client_name_response()
     add_msg_to_scrollbox("{}\n".format(response_message))
-    sent = connected_clients[client_address][0].send(
-        bytes(response_message, "UTF-8")
-    )
+    sent = connected_clients[client_address][0].send(bytes(response_message, "UTF-8"))
     add_msg_to_scrollbox("Client {} registered \n".format(client_name))
     print("Client registered name {} Sent 200 OK in {} bytes".format(client_name, sent))
 

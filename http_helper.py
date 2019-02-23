@@ -20,12 +20,16 @@ def extract_message_details(line):
     print("Line to process {}".format(line))
     import json
 
-    line = json.loads(line)
-    return (
-        line.get("mode", None),
-        line.get("destination", None),
-        line.get("message", None),
-    )
+    try:
+        line = json.loads(line)
+        return (
+            line.get("mode", None),
+            line.get("destination", None),
+            line.get("message", None),
+        )
+    except json.decoder.JSONDecodeError as e:
+        # ack message
+        return "ACK", None, None
 
 
 def prepare_http_msg_request(verb, resource, body=""):
@@ -94,7 +98,7 @@ def parse_client_name_response(http_response):
     return json.loads(names)
 
 
-def prepare_send_message_response(mode, destination, message):
+def prepare_fwd_msg_to_client(mode, destination, message):
     import json
 
     body = {
@@ -104,3 +108,7 @@ def prepare_send_message_response(mode, destination, message):
         "message": message,
     }
     return prepare_http_msg_response("200 OK", json.dumps(body))
+
+
+def prepare_ack_message():
+    return prepare_http_msg_response("200 OK", SEND_MESSAGE)
