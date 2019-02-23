@@ -6,6 +6,7 @@ GET_ALL_CLIENTS = "all/client/names"
 REGISTER_CLIENT_NAME = "register/client/name"
 SEND_MESSAGE = "send/message"
 
+
 def extract_client_name(http_request):
     client_name = ""
     lines = http_request.split("\n")
@@ -15,8 +16,7 @@ def extract_client_name(http_request):
     return client_name
 
 
-def extract_message_details(http_request):
-    line = http_request.split("\n")[6]
+def extract_message_details(line):
     print("Line to process {}".format(line))
     import json
 
@@ -90,3 +90,15 @@ def parse_client_name_response(http_response):
     import json
 
     return json.loads(names)
+
+
+def prepare_send_message_response(mode, destination, message):
+    import json
+
+    body = {
+        "resource": SEND_MESSAGE,
+        "mode": mode,
+        "destination": destination,
+        "message": message,
+    }
+    return prepare_http_msg_response("200 OK", json.dumps(body))

@@ -34,12 +34,15 @@ def get_address_from_name(name):
 
 
 def parse_data_from_client(client_address, data_from_client):
-    mode, destination, message = extract_message_details(data_from_client)
+    mode, destination, message = extract_message_details(
+        data_from_client.split("\n")[6]
+    )
     print("Message {} destined to {} via mode {}".format(message, destination, mode))
-    full_message = "{}:{}:{}".format(
+
+    response_message = prepare_send_message_response(
         mode, connected_clients[client_address][2], message
     )
-    print(connected_clients)
+
     if mode == "1-1":
         print(
             "Sending message to {}".format(
@@ -47,11 +50,11 @@ def parse_data_from_client(client_address, data_from_client):
             )
         )
         connected_clients[get_address_from_name(destination)][0].sendall(
-            bytes(full_message, "UTF-8")
+            bytes(response_message, "UTF-8")
         )
     elif mode == "1-N":
         for address, client in connected_clients.items():
-            client[0].sendall(bytes(full_message, "UTF-8"))
+            client[0].sendall(bytes(response_message, "UTF-8"))
     elif mode == "get":
         pass
 

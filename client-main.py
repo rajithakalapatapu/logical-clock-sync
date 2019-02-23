@@ -21,7 +21,7 @@ chosen_client = tk.StringVar()
 
 
 def on_choosing_client():
-    print(chosen_client.get())
+    print("Chose to send 1-1 to client {}".format(chosen_client.get()))
 
 
 def get_clients_from_server():
@@ -35,7 +35,7 @@ def on_message_cast_option():
         get_clients_from_server()
     else:
         # 1-N
-        print("Client intends to send a 1-1N message")
+        print("Client intends to send a 1-N message")
 
 
 def exit_program():
@@ -93,10 +93,21 @@ def parse_connection_request_response(msg):
         global connected
         connected = True
         connection_status.config(text="Connected to server...")
-
     else:
         # connection failed
         print("Try connecting again...")
+
+
+def display_incoming_message(msg):
+    if "200 OK in msg":
+        import json
+
+        mode, source, message = extract_message_details(json.loads(msg.split("\n")[2]))
+        display_msg = "{} sent a {}: \n {}".format(source, mode, message)
+        msg_area.insert(END, "\n" + display_msg)
+        msg_area.see(END)
+    else:
+        print("Sending message failed {}".format(msg))
 
 
 def parse_incoming_message(msg):
@@ -105,6 +116,10 @@ def parse_incoming_message(msg):
         display_client_names(parse_client_name_response(msg)[1:])
     elif REGISTER_CLIENT_NAME in msg:
         parse_connection_request_response(msg)
+    elif SEND_MESSAGE in msg:
+        display_incoming_message(msg)
+    else:
+        print("An unsupported operation happened! {}".format(msg))
 
 
 def receive_from_server():
@@ -113,8 +128,6 @@ def receive_from_server():
             data_from_server = client_socket.recv(MAX_MESSAGE_SIZE)
             data_from_server = data_from_server.decode("UTF-8")
             if data_from_server:
-                msg_area.insert(END, "\n" + data_from_server)
-                msg_area.see(END)
                 parse_incoming_message(data_from_server)
             else:
                 print("Closing this window as the server exited.")
