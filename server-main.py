@@ -4,7 +4,9 @@ import socket
 from threading import Thread
 import selectors
 from http_helper import *
+import pprint
 
+pp = pprint.PrettyPrinter(indent=4)
 # references: Python GUI cookbook
 # https://docs.python.org/3/howto/sockets.html#creating-a-socket
 # https://pymotw.com/3/select/
@@ -45,14 +47,15 @@ def parse_data_from_client(client_address, data_from_client):
 
     if mode == "1-1":
         print(
-            "Sending message to {}".format(
-                connected_clients[get_address_from_name(destination)]
+            "{} Sending message to {}".format(
+                "*"*8, connected_clients[get_address_from_name(destination)]
             )
         )
         connected_clients[get_address_from_name(destination)][0].sendall(
             bytes(response_message, "UTF-8")
         )
     elif mode == "1-N":
+        print("{} Sending message to all clients".format("*"*8))
         for address, client in connected_clients.items():
             client[0].sendall(bytes(response_message, "UTF-8"))
     elif mode == "get":
@@ -61,13 +64,13 @@ def parse_data_from_client(client_address, data_from_client):
 
 def read_from_client(client_connection, event_mask):
     print(
-        "Client activity on {} with event mask {}".format(client_connection, event_mask)
+        "{} Client activity on {} with event mask {}".format("*"*4, client_connection, event_mask)
     )
 
     client_address = client_connection.getpeername()
     data_from_client = client_connection.recv(MAX_MESSAGE_SIZE).decode("UTF-8")
     if data_from_client:
-        print("Received '{}' from '{}'".format(data_from_client, client_address))
+        print("\t Received '{}' from '{}'".format(data_from_client, client_address))
         scr.insert(END, "{}: \t {}\n".format(client_address, data_from_client))
         scr.see(END)
         if REGISTER_CLIENT_NAME in data_from_client:
@@ -112,7 +115,8 @@ def register_client_name(client_sock, client_address, data_str):
     )
     global connected_clients
     connected_clients[client_address] = (client_sock, client_address, client_name)
-    print("List of all connected_clients {}".format(connected_clients))
+    print("List of all connected_clients")
+    pp.pprint(connected_clients)
     update_client_labels(connected_clients)
     sent = connected_clients[client_address][0].send(
         bytes(prepare_post_client_name_response(), "UTF-8")

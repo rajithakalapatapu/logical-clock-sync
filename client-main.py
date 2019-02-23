@@ -31,11 +31,12 @@ def get_clients_from_server():
 def on_message_cast_option():
     if message_cast_option.get() == 0:
         # 1-1
-        print("Client intends to send a 1-1 message - get client names")
+        print("{} Client intends to send a 1-1 message - get client names".format("*"*4))
         get_clients_from_server()
     else:
         # 1-N
-        print("Client intends to send a 1-N message")
+        print("{} Client intends to send a 1-N message".format("*"*4))
+
 
 
 def exit_program():
@@ -73,7 +74,7 @@ def send_to_server():
             send_one_to_one_message(chosen_client.get(), msg)
         else:
             send_one_to_n_message(msg)
-        print("Sent message {} to the server".format(msg))
+        print("{} Sent message {} to the server".format("*"*4, msg))
 
 
 def display_client_names(names):
@@ -140,7 +141,7 @@ def receive_from_server():
 def connect_to_server():
     try:
         if not username.get():
-            messagebox.showerror("Username invalid", "Empty username is invalid")
+            messagebox.showerror("Username invalid", "Enter a non-empty username")
             return
         name_entered = username.get()
         global client_socket
