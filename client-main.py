@@ -38,7 +38,10 @@ default_msg = "Enter message here..."
 message_cast_option = tk.IntVar()
 # a global variable to store the client to send 1:1 message to - accessed by thread and main
 chosen_client = tk.StringVar()
-
+# a global variable to store the radiobutton objects for all client names
+# when we get info about a new client, we delete all the radio objects on the
+# client UI and redraw them
+all_client_name_radiobuttons = []
 
 def on_choosing_client():
     """
@@ -162,6 +165,11 @@ def display_client_names(names):
     :param names: a list holding names of all clients currently connected to server
     :return: None
     """
+    global all_client_name_radiobuttons
+    for button in all_client_name_radiobuttons:
+        # remove all the older radio buttons
+        # we have a new list of names - so use that to display client names
+        button.destroy()
     for index, name in enumerate(names):
         # add radio buttons for each client name
         # when user chooses a client to send to, it's name will
@@ -177,6 +185,7 @@ def display_client_names(names):
             value=name,
         )
         radio.grid(column=index, row=17, padx=10, pady=10)
+        all_client_name_radiobuttons.append(radio)
 
 
 def parse_connection_request_response(msg):
