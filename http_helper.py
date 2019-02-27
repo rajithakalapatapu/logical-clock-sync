@@ -38,27 +38,34 @@ def extract_message_details(line):
     """
     Given a line of text containing message details
     we extract the required fields
-    if the content is json content, we know it is a new message
-    if the content is not json, then we know it is ack for sent message
     :param line: text containing message details
-    example:
-    {"mode" : "1:1", "destination" : "client-name", "message": "sample message"}
+
 
     :return: tuple holding (mode, destination, message)
-    example:
-    returns ("1:1", "client-name", "sample message")
 
+    examples:
+    if the input is:
+    {"mode" : "1:1", "destination" : "client-name", "message": "sample message"}
+    the output is ("1:1", "client-name", "sample message")
 
+    if the input is:
+    {"mode" : "1:1", "source" : "client-name", "message": "sample message"}
+    the output is ("1:1", "client-name", "sample message")
+
+    NOTE: the second element could have the label as either "destination" or "source"
     """
     print("Line to process {}".format(line))
     import json
 
     try:
         line = json.loads(line)
+        mode = line.get("mode", None)
+        source_or_destination = line.get("destination", None) or line.get("source", None)
+        message = line.get("message", None)
         return (
-            line.get("mode", None),
-            line.get("destination", None),
-            line.get("message", None),
+            mode,
+            source_or_destination,
+            message,
         )
     except json.decoder.JSONDecodeError as e:
         # we received ACK message for a message we sent earlier
@@ -232,7 +239,7 @@ def parse_client_name_response(http_response):
     return json.loads(names)
 
 
-def prepare_fwd_msg_to_client(mode, destination, message):
+def prepare_fwd_msg_to_client(mode, source, message):
     """
     Given client details, prepare a HTTP message to send to the client
     :param mode: is either 1:1 or 1:N
@@ -255,10 +262,10 @@ def prepare_fwd_msg_to_client(mode, destination, message):
     body = {
         "resource": SEND_MESSAGE,
         "mode": mode,
-        "destination": destination,
+        "source": source,
         "message": message,
     }
-    return prepare_http_msg_response("200 OK", json.dumps(body))
+    return prepare_http_msg_request("POST", SEND_MESSAGE, json.dumps(body))
 
 
 def prepare_ack_message():

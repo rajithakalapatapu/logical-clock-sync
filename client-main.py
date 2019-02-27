@@ -199,7 +199,7 @@ def display_incoming_message(msg):
     """
     displays incoming message in the scrollbox area
 
-    if we received an ACK for our sent message, we show "Message sent successfully!"
+    if we received 200 OK for our sent message, we show "Message sent successfully!"
     if we received a new incoming message, we show where we got it from and if it
     was 1:1 or 1:N and the actual message content
     :param msg: message received from the server
@@ -207,6 +207,10 @@ def display_incoming_message(msg):
     """
     if "200 OK" in msg:
         # the server sent us a 200 OK (success) for our request
+        display_msg = "Message sent successfully!"
+        msg_area.insert(END, "\n" + display_msg)
+        msg_area.see(END)
+    elif SEND_MESSAGE in msg:
         import json
 
         # this is the HTTP response message with
@@ -220,15 +224,12 @@ def display_incoming_message(msg):
         response_body = msg[7]
         print("we are going to process {}".format(response_body))
 
-        mode, source, message = extract_message_details(json.loads(response_body))
-        if mode == "ACK":
-            display_msg = "Message sent successfully!"
-        else:
-            display_msg = "{} sent a {}: \n {}".format(source, mode, message)
+        mode, source, message = extract_message_details(response_body)
+        display_msg = "{} sent a {}: \n {}".format(source, mode, message)
         msg_area.insert(END, "\n" + display_msg)
         msg_area.see(END)
     else:
-        # the server did not send us 200 OK - so some failure happened
+        # some failure happened
         print("Sending message failed {}".format(msg))
 
 

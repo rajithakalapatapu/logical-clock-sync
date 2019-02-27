@@ -78,7 +78,7 @@ def add_msg_to_scrollbox(msg):
     """
     Add a given message to the scrollbox end
     :param msg: message to display
-    :return:
+    :return: None
     """
     # add message to the end of scrollbox
     scr.insert(END, msg)
