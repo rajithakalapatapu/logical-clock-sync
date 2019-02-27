@@ -81,6 +81,9 @@ def on_message_cast_option():
     else:
         # The user selected 1-N message option - we print it for debugging purposes
         print("{} Client intends to send a 1-N message".format("*" * 4))
+        # in case the user selected 1-1 before selecting 1-N, we destroy the radio buttons
+        for button in all_client_name_radiobuttons:
+            button.destroy()
 
 
 def exit_program():
