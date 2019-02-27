@@ -248,14 +248,14 @@ def prepare_fwd_msg_to_client(mode, source, message):
     :return: string containing HTTP message with the body containing mdoe, destination and mode
 
     example:
-    HTTP/1.0 200 OK
+    POST send/message HTTP/1.0
     Content-Type:Application/json
-    Content-Length:95
+    Content-Length:92
     Host:127.0.0.1
-    Date:2019-02-27 23:03:32.954617
+    Date:2019-02-27 23:49:46.496350
     User-Agent:Custom HTTP endpoint written for CSE5306 lab
 
-    "{\"resource\": \"send/message\", \"mode\": \"1-1\", \"destination\": \"asdfadsf\", \"message\": \"Hello! Hi!\"}"
+    {"resource": "send/message", "mode": "1-1", "source": "rajitha", "message": "Hello Srinath"}
     """
     import json
 
