@@ -1,3 +1,9 @@
+"""
+Name: Venkata Adilakshmi Rajitha Kalapatapu
+Login ID: vxk2465
+"""
+
+
 import tkinter as tk
 from tkinter import ttk, scrolledtext, END
 import socket
@@ -8,7 +14,8 @@ import pprint
 from http_helper import *
 
 PPRINTER = pprint.PrettyPrinter(indent=4)
-# references: Python GUI cookbook
+# References:
+# Python GUI cookbook by Packtpub
 # https://docs.python.org/3/howto/sockets.html#creating-a-socket
 # https://pymotw.com/3/select/
 # https://pymotw.com/3/selectors/
@@ -171,7 +178,13 @@ def read_from_client(client_connection, event_mask):
         # we have valid data from the client
         print("\t Received '{}' from '{}'".format(data_from_client, client_address))
         # show what we received on the scrollbox
-        add_msg_to_scrollbox("{}: \t {}\n".format(client_address, data_from_client))
+        if client_address in connected_clients.keys():
+            # if it is existing client, just show the name
+            add_msg_to_scrollbox("{}: \t {}\n".format(connected_clients[client_address][2], data_from_client))
+        else:
+            # if it is a new client, show the address for now
+            # in the next message, we'll show the name on the scrollbox
+            add_msg_to_scrollbox("{}: \t {}\n".format(client_address, data_from_client))
 
         if REGISTER_CLIENT_NAME in data_from_client:
             # A new client just connected - so we register it's name and update the UI

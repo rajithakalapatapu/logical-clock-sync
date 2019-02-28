@@ -1,10 +1,17 @@
+"""
+Name: Venkata Adilakshmi Rajitha Kalapatapu
+Login ID: vxk2465
+"""
+
+
 import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox, END
 import socket
 from threading import Thread
 from http_helper import *
 
-# references: Python GUI cookbook
+# References:
+# Python GUI cookbook by Packtpub
 # https://docs.python.org/3/howto/sockets.html#creating-a-socket
 # https://pymotw.com/3/select/
 # https://pymotw.com/3/selectors/
