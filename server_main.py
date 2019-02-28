@@ -3,10 +3,11 @@ from tkinter import ttk, scrolledtext, END
 import socket
 from threading import Thread
 import selectors
-from http_helper import *
 import pprint
 
-pp = pprint.PrettyPrinter(indent=4)
+from http_helper import *
+
+PPRINTER = pprint.PrettyPrinter(indent=4)
 # references: Python GUI cookbook
 # https://docs.python.org/3/howto/sockets.html#creating-a-socket
 # https://pymotw.com/3/select/
@@ -261,7 +262,7 @@ def register_client_name(client_sock, client_address, data_str):
     # connected_clients dictionary storing all the clients we have
     connected_clients[client_address] = (client_sock, client_address, client_name)
     print("List of all connected_clients")
-    pp.pprint(connected_clients)
+    PPRINTER.pprint(connected_clients)
 
     # update the client list on the server UI
     update_client_labels(connected_clients)
