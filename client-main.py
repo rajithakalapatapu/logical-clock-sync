@@ -43,6 +43,7 @@ chosen_client = tk.StringVar()
 # client UI and redraw them
 all_client_name_radiobuttons = []
 
+
 def on_choosing_client():
     """
     Responsible for printing console log to serve for debugging purposes

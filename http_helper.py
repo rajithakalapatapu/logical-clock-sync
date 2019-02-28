@@ -60,13 +60,11 @@ def extract_message_details(line):
     try:
         line = json.loads(line)
         mode = line.get("mode", None)
-        source_or_destination = line.get("destination", None) or line.get("source", None)
-        message = line.get("message", None)
-        return (
-            mode,
-            source_or_destination,
-            message,
+        source_or_destination = line.get("destination", None) or line.get(
+            "source", None
         )
+        message = line.get("message", None)
+        return (mode, source_or_destination, message)
     except json.decoder.JSONDecodeError as e:
         # we received ACK message for a message we sent earlier
         return "ACK", None, None
