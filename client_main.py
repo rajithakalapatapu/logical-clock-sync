@@ -216,6 +216,15 @@ def display_client_names(names):
         all_client_name_radiobuttons.append(radio)
 
 
+def send_clock_to_random_client(clients):
+    print("Choosing one client randomly among {}".format(clients))
+    random_index = random.randint(0, len(clients) - 1)
+    print("random_index is {}".format(random_index))
+    random_client = clients[random_index]
+    print("random_client is {}".format(random_client))
+    send_one_to_one_message(random_client, logical_clock)
+
+
 def parse_connection_request_response(msg):
     """
     if server sent 200 OK for our user name registration
@@ -263,6 +272,14 @@ def display_incoming_message(msg):
         mode, source, message = extract_message_details(response_body)
         display_msg = "{} sent a {}: \n {}".format(source, mode, message)
         add_msg_to_scrollbox("{}\n".format(display_msg))
+
+        global logical_clock
+        if message < logical_clock:
+            add_msg_to_scrollbox("No adjustment necessary\n")
+        else:
+            logical_clock = message + 1
+            add_msg_to_scrollbox("Clock adjusted to {}\n".format(logical_clock))
+
     else:
         # some failure happened
         print("Sending message failed {}".format(msg))
@@ -281,7 +298,11 @@ def parse_incoming_message(msg):
     print("Received {} from server".format(msg))
     if GET_ALL_CLIENTS in msg:
         # we got a response to our request to get all client names
-        display_client_names(parse_client_name_response(msg)[1:])
+        print("This is the unmodified response {}".format(msg))
+        print(
+            "This is what we got after parse {}".format(parse_client_name_response(msg))
+        )
+        send_clock_to_random_client(parse_client_name_response(msg)[1:])
     elif REGISTER_CLIENT_NAME in msg:
         # we got a response to our request to register a client name
         parse_connection_request_response(msg)
@@ -407,19 +428,19 @@ def setup_client_window():
 def clock_tick():
     global logical_clock
     logical_clock += 1
-    add_msg_to_scrollbox("This is logical clock value {}\n".format(logical_clock))
+    # add_msg_to_scrollbox("This is logical clock value {}\n".format(logical_clock))
     t = Timer(1.0, clock_tick)
     t.daemon = True
     t.start()
 
 
-def send_to_random_client():
-    add_msg_to_scrollbox("This is going to send msg to random client\n")
+def trigger_send_to_random_client():
+    if connected:
+        add_msg_to_scrollbox("This is going to send msg to random client\n")
+        # get all the client names from server via a HTTP get message
+        get_clients_from_server()
 
-    # get all the client names from server via a HTTP get message
-    get_clients_from_server()
-
-    s = Timer(random.randint(2, 10), send_to_random_client)
+    s = Timer(random.randint(2, 10), trigger_send_to_random_client)
     s.daemon = True
     s.start()
 
@@ -435,7 +456,7 @@ def main():
         t = Timer(1.0, clock_tick)
         t.daemon = True
         t.start()
-        s = Timer(random.randint(2, 10), send_to_random_client)
+        s = Timer(random.randint(2, 10), trigger_send_to_random_client)
         s.daemon = True
         s.start()
 
