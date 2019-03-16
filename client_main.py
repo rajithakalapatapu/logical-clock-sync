@@ -50,6 +50,7 @@ chosen_client = tk.StringVar()
 # when we get info about a new client, we delete all the radio objects on the
 # client UI and redraw them
 all_client_name_radiobuttons = []
+logical_clock = 0
 
 
 def on_choosing_client():
@@ -402,6 +403,12 @@ def setup_client_window():
         radio.grid(column=index, row=13, padx=10, pady=10)
 
 
+def clock_tick():
+    global logical_clock
+    logical_clock += 1
+    print("This is logical clock value {}".format(logical_clock))
+
+
 def main():
     """
     main method of the program
@@ -410,6 +417,10 @@ def main():
     """
     try:
         setup_client_window()
+        from threading import Timer
+
+        t = Timer(1.0, clock_tick)
+        t.start()
         client_window.mainloop()
     except RuntimeError:
         print("Exiting...")
