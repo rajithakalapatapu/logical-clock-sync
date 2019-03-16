@@ -8,7 +8,7 @@ Login ID: vxk2465
 import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox, END
 import socket
-from threading import Thread
+from threading import Thread, Timer
 from http_helper import *
 import random
 
@@ -407,7 +407,10 @@ def setup_client_window():
 def clock_tick():
     global logical_clock
     logical_clock += 1
-    add_msg_to_scrollbox("This is logical clock value {}".format(logical_clock))
+    add_msg_to_scrollbox("This is logical clock value {}\n".format(logical_clock))
+    t = Timer(1.0, clock_tick)
+    t.daemon = True
+    t.start()
 
 
 def main():
@@ -418,9 +421,8 @@ def main():
     """
     try:
         setup_client_window()
-        from threading import Timer
-
         t = Timer(1.0, clock_tick)
+        t.daemon = True
         t.start()
         client_window.mainloop()
     except RuntimeError:
