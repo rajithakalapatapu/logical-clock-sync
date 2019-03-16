@@ -413,6 +413,13 @@ def clock_tick():
     t.start()
 
 
+def send_to_random_client():
+    add_msg_to_scrollbox("This is going to send msg to random client\n")
+    s = Timer(random.randint(2, 10), send_to_random_client)
+    s.daemon = True
+    s.start()
+
+
 def main():
     """
     main method of the program
@@ -424,6 +431,10 @@ def main():
         t = Timer(1.0, clock_tick)
         t.daemon = True
         t.start()
+        s = Timer(random.randint(2, 10), send_to_random_client)
+        s.daemon = True
+        s.start()
+
         client_window.mainloop()
     except RuntimeError:
         print("Exiting...")
