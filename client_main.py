@@ -10,6 +10,7 @@ from tkinter import ttk, scrolledtext, messagebox, END
 import socket
 from threading import Thread
 from http_helper import *
+import random
 
 # References:
 # Python GUI cookbook by Packtpub
@@ -50,7 +51,7 @@ chosen_client = tk.StringVar()
 # when we get info about a new client, we delete all the radio objects on the
 # client UI and redraw them
 all_client_name_radiobuttons = []
-logical_clock = 0
+logical_clock = random.randint(0, 51)
 
 
 def on_choosing_client():
