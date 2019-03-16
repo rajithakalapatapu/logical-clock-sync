@@ -406,7 +406,7 @@ def setup_client_window():
 def clock_tick():
     global logical_clock
     logical_clock += 1
-    print("This is logical clock value {}".format(logical_clock))
+    add_msg_to_scrollbox("This is logical clock value {}".format(logical_clock))
 
 
 def main():
