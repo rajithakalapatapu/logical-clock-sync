@@ -415,6 +415,10 @@ def clock_tick():
 
 def send_to_random_client():
     add_msg_to_scrollbox("This is going to send msg to random client\n")
+
+    # get all the client names from server via a HTTP get message
+    get_clients_from_server()
+
     s = Timer(random.randint(2, 10), send_to_random_client)
     s.daemon = True
     s.start()
