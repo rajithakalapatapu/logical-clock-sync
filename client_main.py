@@ -51,6 +51,8 @@ chosen_client = tk.StringVar()
 # when we get info about a new client, we delete all the radio objects on the
 # client UI and redraw them
 all_client_name_radiobuttons = []
+# a global variable to store the value of lamport's logical clock of the sender client process
+# it is initialized to a value between 0 and 50
 logical_clock = random.randint(0, 51)
 
 
@@ -217,11 +219,20 @@ def display_client_names(names):
 
 
 def send_clock_to_random_client(clients):
+    """
+    Send our logical clock to a client chosen at random
+    :param clients: a list of client names to choose from
+    :return: None
+    """
     print("Choosing one client randomly among {}".format(clients))
+    # Choosing one client randomly among all clients
     random_index = random.randint(0, len(clients) - 1)
+    # randomly chosen index is stored in random_index
     print("random_index is {}".format(random_index))
+    # randomly chosen client is stored in random_client
     random_client = clients[random_index]
     print("random_client is {}".format(random_client))
+    # send a 1:1 message containing our logical clock value to randomly chosen client
     send_one_to_one_message(random_client, logical_clock)
 
 
@@ -273,11 +284,20 @@ def display_incoming_message(msg):
         display_msg = "{} sent a {}: \n {}".format(source, mode, message)
         add_msg_to_scrollbox("{}\n".format(display_msg))
 
+        # Lamport's logical clocks!
+        # This is where we adjust the clocks
         global logical_clock
+        # Here message contains the logical clock value of the sender
+        # and logical_clock contains the logical clock value of the receiver
         if message < logical_clock:
+            # the receiving logical clock is ahead of the sending logical clock
+            # so show to the UI that no adjustment is needed
             add_msg_to_scrollbox("No adjustment necessary\n")
         else:
+            # the receiving clock is behind or equal to the sending logical clock
+            # so adjust the receiving clock to be one more than the sending clock value
             logical_clock = message + 1
+            # show to the UI that the adjust was made
             add_msg_to_scrollbox("Clock adjusted to {}\n".format(logical_clock))
 
     else:
@@ -302,6 +322,7 @@ def parse_incoming_message(msg):
         print(
             "This is what we got after parse {}".format(parse_client_name_response(msg))
         )
+        # we now send our logical clock to a client chosen at random
         send_clock_to_random_client(parse_client_name_response(msg)[1:])
     elif REGISTER_CLIENT_NAME in msg:
         # we got a response to our request to register a client name
@@ -426,20 +447,37 @@ def setup_client_window():
 
 
 def clock_tick():
+    """
+    Increment the value of logical_clock by 1
+    Restart the timer once again
+    :return: None
+    """
     global logical_clock
     logical_clock += 1
-    # add_msg_to_scrollbox("This is logical clock value {}\n".format(logical_clock))
+
+    # Restart the timer again to one second - at the end of the second, we call
+    # clock_tick again which increments the value by 1
     t = Timer(1.0, clock_tick)
     t.daemon = True
     t.start()
 
 
 def trigger_send_to_random_client():
+    """
+    If the client is connected to the server, go ahead and fetch all client names connected
+    to the server
+    Restart the timer once again
+    :return: None
+    """
+    # If the client is connected to the server, go ahead and fetch all client names connected
+    # to the server
     if connected:
         add_msg_to_scrollbox("This is going to send msg to random client\n")
         # get all the client names from server via a HTTP get message
         get_clients_from_server()
 
+    # Restart the timer again to a random value between 2 and 10 seconds
+    # At the end of that timer, call "trigger_send_to_random_client"
     s = Timer(random.randint(2, 10), trigger_send_to_random_client)
     s.daemon = True
     s.start()
@@ -453,11 +491,19 @@ def main():
     """
     try:
         setup_client_window()
+        # Instantiate a timer for one second - at the end of one second call "clock_tick"
         t = Timer(1.0, clock_tick)
+        # make the timer a background thread
         t.daemon = True
+        # Start the timer object
         t.start()
+
+        # Instantiate a timer to a random value between 2 and 10 seconds
+        # At the end of that timer, call "trigger_send_to_random_client"
         s = Timer(random.randint(2, 10), trigger_send_to_random_client)
+        # make the timer a background thread
         s.daemon = True
+        # Start the timer object
         s.start()
 
         client_window.mainloop()
