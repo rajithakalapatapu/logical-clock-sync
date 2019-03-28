@@ -21,6 +21,7 @@ import random
 # http://net-informations.com/python/net/thread.htm
 # https://www.geeksforgeeks.org/socket-programming-multi-threading-python/
 # https://medium.com/swlh/lets-write-a-chat-app-in-python-f6783a9ac170
+# James F. Kurose and Keith W. Ross. 2012. Computer Networking: A Top-Down Approach (6th Edition) (6th ed.). Pearson
 
 
 # a global socket object for all functions to access and send/recv
@@ -34,7 +35,7 @@ username = tk.StringVar()
 # a global label to show connection status - accessed by thread and main
 connection_status = ttk.Label(client_window, text="Not connected to server")
 # a global variable to retrieve message entered by client - accessed by thread and main
-msg_client_entered = tk.StringVar()
+# msg_client_entered = tk.StringVar()
 # a global variable to show incoming message - scrollbox - accessed by thread and main
 scroll_width = 32
 scroll_height = 15
@@ -154,15 +155,16 @@ def send_to_server():
     Send the message to the server via HTTP POST request
     :return:
     """
-    msg = msg_client_entered.get()
+    # msg = msg_client_entered.get()
     global connected
     # if the message is empty or full of white spaces or the message prompt
     # or if we are not yet connected, don't send the message yet.
     if not msg.strip() or msg == default_msg or not connected:
-        msg_client_entered.set(default_msg)
+        pass
+        # msg_client_entered.set(default_msg)
     else:
         # we're connected and we have a non-empty valid message to send here
-        msg_client_entered.set("")
+        # msg_client_entered.set("")
         global message_cast_option
         # call helper method to send 1:1 or 1:N message
         # based on which radiobutton was clicked
@@ -418,11 +420,11 @@ def setup_client_window():
     msg_area.grid(column=1, row=5, padx=5, pady=5)
 
     # set up widgets to get chat message input and send message
-    msg_entry = ttk.Entry(client_window, width=32, textvariable=msg_client_entered)
-    msg_entry.grid(column=1, row=25, padx=30, pady=15)
-    msg_client_entered.set(default_msg)
-    msg_send = ttk.Button(client_window, text="Send", command=send_to_server)
-    msg_send.grid(column=2, row=25, padx=30, pady=15)
+    # msg_entry = ttk.Entry(client_window, width=32, textvariable=msg_client_entered)
+    # msg_entry.grid(column=1, row=25, padx=30, pady=15)
+    # msg_client_entered.set(default_msg)
+    # msg_send = ttk.Button(client_window, text="Send", command=send_to_server)
+    # msg_send.grid(column=2, row=25, padx=30, pady=15)
 
     # set up a button to exit the client UI
     # when this button is clicked, "exit_program"
@@ -434,16 +436,16 @@ def setup_client_window():
     client_window.protocol("WM_DELETE_WINDOW", exit_program)
 
     # provide widgets to choose between 1:1 or 1:N messaging
-    message_cast_options = ["1:1", "1:N"]
-    for index, option in enumerate(message_cast_options):
-        radio = ttk.Radiobutton(
-            client_window,
-            text=option,
-            variable=message_cast_option,
-            command=on_message_cast_option,
-            value=index,
-        )
-        radio.grid(column=index, row=13, padx=10, pady=10)
+    # message_cast_options = ["1:1", "1:N"]
+    # for index, option in enumerate(message_cast_options):
+    #     radio = ttk.Radiobutton(
+    #         client_window,
+    #         text=option,
+    #         variable=message_cast_option,
+    #         command=on_message_cast_option,
+    #         value=index,
+    #     )
+    #     radio.grid(column=index, row=13, padx=10, pady=10)
 
 
 def clock_tick():
@@ -454,6 +456,8 @@ def clock_tick():
     """
     global logical_clock
     logical_clock += 1
+
+    add_msg_to_scrollbox("Current value of the logical clock is {}\n".format(logical_clock))
 
     # Restart the timer again to one second - at the end of the second, we call
     # clock_tick again which increments the value by 1
