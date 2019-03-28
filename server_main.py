@@ -238,7 +238,14 @@ def unregister_client_name(client_connection):
     # close socket connection to the client that shutdown
     client_connection.close()
     # update UI to show that the client has disconnected
-    add_msg_to_scrollbox("Client {} has disconnected \n".format(client_name))
+    response_message = prepare_client_disconnected_message(
+        "Client {} has disconnected \n".format(client_name)
+    )
+    add_msg_to_scrollbox(response_message)
+
+    for address, client in connected_clients.items():
+        # for each client, send the message
+        client[0].sendall(bytes(response_message, "UTF-8"))
 
 
 def update_client_labels(clients):

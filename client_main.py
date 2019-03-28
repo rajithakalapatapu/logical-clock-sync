@@ -291,7 +291,7 @@ def display_incoming_message(msg):
         global logical_clock
         # Here message contains the logical clock value of the sender
         # and logical_clock contains the logical clock value of the receiver
-        if message < logical_clock:
+        if int(message) < int(logical_clock):
             # the receiving logical clock is ahead of the sending logical clock
             # so show to the UI that no adjustment is needed
             add_msg_to_scrollbox("No adjustment necessary\n")
@@ -332,6 +332,10 @@ def parse_incoming_message(msg):
     elif SEND_MESSAGE in msg:
         # we got incoming message from a client forwarded by the server
         display_incoming_message(msg)
+    elif CLIENT_DISCONNECTED in msg:
+        # the server is telling us that a client disconnected
+        msg_to_show = parse_client_disconnected_message(msg)
+        add_msg_to_scrollbox(msg_to_show)
     else:
         print("An unsupported operation happened! {}".format(msg))
 
@@ -457,7 +461,9 @@ def clock_tick():
     global logical_clock
     logical_clock += 1
 
-    add_msg_to_scrollbox("Current value of the logical clock is {}\n".format(logical_clock))
+    add_msg_to_scrollbox(
+        "Current value of the logical clock is {}\n".format(logical_clock)
+    )
 
     # Restart the timer again to one second - at the end of the second, we call
     # clock_tick again which increments the value by 1

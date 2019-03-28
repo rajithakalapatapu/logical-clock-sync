@@ -16,6 +16,7 @@ server_port = 9999
 GET_ALL_CLIENTS = "all/client/names"
 REGISTER_CLIENT_NAME = "register/client/name"
 SEND_MESSAGE = "send/message"
+CLIENT_DISCONNECTED = "client/disconnected"
 
 
 def extract_client_name(http_request):
@@ -242,6 +243,57 @@ def parse_client_name_response(http_response):
     import json
 
     return json.loads(names)
+
+
+def parse_client_disconnected_message(message):
+    """
+    Given a HTTP message extract the data containing
+    disconnection information
+    :param message: string containing the HTTP headers and message - example
+    the data in square brackets is manually written to show why we use index 7
+    Received
+    POST client/disconnected HTTP/1.0 [index 0]
+    Content-Type:Application/json [index 1]
+    Content-Length:79 [index 2]
+    Host:127.0.0.1 [index 3]
+    Date:2019-03-28 02:30:49.344914 [index 4]
+    User-Agent:Custom HTTP endpoint written for CSE5306 lab [index 5]
+    [index 6]
+    {"resource": "client/disconnected", "message": "Client c1 has disconnected \n"} [index 7]
+
+    :return:
+    """
+    # 8th line has the data we need
+    # {"resource": "client/disconnected", "message": "Client c1 has disconnected \n"}
+    msg = message.split("\n")[7]
+    import json
+
+    message_data = json.loads(msg)
+    return message_data.get("message", "")
+
+
+def prepare_client_disconnected_message(message):
+    """
+    Given a message string, prepare a HTTP message to send to all connected
+    clients when one client disconnects
+    :param message: the message the destination client should receive
+    :return: string containing HTTP message with the body containing mdoe, destination and mode
+
+    example:
+    POST client/disconnected HTTP/1.0
+    Content-Type:Application/json
+    Content-Length:92
+    Host:127.0.0.1
+    Date:2019-02-27 23:49:46.496350
+    User-Agent:Custom HTTP endpoint written for CSE5306 lab
+
+    {"resource": "client/disconnected", "mode": "1-1", "source": "rajitha", "message": "Hello Srinath"}
+
+    """
+    import json
+
+    body = {"resource": CLIENT_DISCONNECTED, "message": message}
+    return prepare_http_msg_request("POST", CLIENT_DISCONNECTED, json.dumps(body))
 
 
 def prepare_fwd_msg_to_client(mode, source, message):
